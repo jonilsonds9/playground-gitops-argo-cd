@@ -1,0 +1,20 @@
+image:
+  repository: jonilsonds9/playground-gitops-argo-cd
+  tag: "ef91fa03632dda58b09277763a27fdaf3f27f130"
+  pullPolicy: IfNotPresent
+
+nameOverride: "default"
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+env:
+  SPRING_PROFILES_ACTIVE: "default"

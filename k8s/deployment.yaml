@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-alpha-prod
+  namespace: alpha-prod
+  labels:
+    app: alpha-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alpha-prod
+  template:
+    metadata:
+      labels:
+        app: alpha-prod
+    spec:
+      containers:
+        - name: alpha-prod
+          image: jonilsonds9/playground-gitops-argo-cd:ef91fa03632dda58b09277763a27fdaf3f27f130
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "alpha-prod"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 5
+      restartPolicy: Always
