@@ -41,3 +41,43 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/playground-gitops-argo-cd:${{ github.sha }}
+
+  update-argocd-repo:
+    name: "Deploy/Update Argo CD Repo"
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    steps:
+      # Verifica o repositório atual
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Configura o git com o usuário e o email
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Clona o repositório de destino
+      - name: Clone destination repository
+        run: |
+          git clone -b beta-prod https://github.com/jonilsonds9/playground-deploy-gitops.git
+        env:
+          REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+
+      # Faz alterações no repositório clonado
+      - name: Make changes
+        run: |
+          cd playground-deploy-gitops
+          chart_dir="helm"
+          new_image_tag=${{ github.sha }}
+          sed -i "s/^  tag: .*/  tag: $new_image_tag/" "$chart_dir/values-beta-prod.yaml"
+
+      # Faz o commit e push das alterações no repositório de destino
+      - name: Commit and push changes
+        run: |
+          cd playground-deploy-gitops
+          git commit -am "Atualização Docker image para sync no Argo CD"
+          git push https://$REPO_ACCESS_TOKEN@github.com/jonilsonds9/playground-deploy-gitops.git beta-prod
+        env:
+          REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
