@@ -71,13 +71,13 @@ jobs:
           cd playground-deploy-gitops
           chart_dir="helm"
           new_image_tag=${{ github.sha }}
-          sed -i "s/^  tag: .*/  tag: $new_image_tag/" "$chart_dir/values-beta-prod.yaml"
+          sed -i "s/^  tag: .*/  tag: $new_image_tag/" "$chart_dir/values-beta.yaml"
 
       # Faz o commit e push das alterações no repositório de destino
       - name: Commit and push changes
         run: |
           cd playground-deploy-gitops
           git commit -am "Atualização Docker image para sync no Argo CD"
-          git push https://$REPO_ACCESS_TOKEN@github.com/jonilsonds9/playground-deploy-gitops.git beta-prod
+          git push https://$REPO_ACCESS_TOKEN@github.com/jonilsonds9/playground-deploy-gitops.git beta
         env:
           REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
