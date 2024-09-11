@@ -61,7 +61,7 @@ jobs:
       # Clona o repositório de destino
       - name: Clone destination repository
         run: |
-          git clone -b beta-prod https://github.com/jonilsonds9/playground-deploy-gitops.git
+          git clone -b beta https://github.com/jonilsonds9/playground-deploy-gitops.git
         env:
           REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
 

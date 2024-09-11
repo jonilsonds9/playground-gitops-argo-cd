@@ -1,11 +1,17 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
-  name: deployment-{{.Values.nameOverride}}
+  name: rollout-{{.Values.nameOverride}}
   namespace: {{.Values.nameOverride}}
   labels:
     app: {{.Values.nameOverride}}
 spec:
+  strategy:
+    blueGreen:
+      activeService: {{ .Values.nameOverride }}-service  # O serviço que aponta para o pod ativo
+      previewService: {{ .Values.nameOverride }}-preview-service  # O serviço que aponta para o pod de preview
+      autoPromotionEnabled: false  # Controle manual de promoção
+      scaleDownDelaySeconds: 30  # Tempo para escalar para baixo o antigo após a promoção
   replicas: 1
   selector:
     matchLabels:
