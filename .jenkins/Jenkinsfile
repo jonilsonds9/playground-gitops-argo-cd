@@ -8,68 +8,104 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Preparation') {
             steps {
-                // Step 1: Checkout do código fonte
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/seu-usuario/seu-repo.git']]])
+                // Step 0: Preparação do ambiente
+                sh 'echo "Preparando ambiente..."'
             }
         }
 
-        stage('Setup JDK') {
+        stage('Deploy') {
             steps {
-                // Step 2: Configuração do JDK para construir o projeto
-                tool name: 'jdk21', type: 'jdk' // Configure um JDK no Jenkins com o nome 'jdk21'
-            }
-        }
-
-        stage('Build with Maven') {
-            steps {
-                // Step 3: Construir o projeto usando Maven
-                sh 'mvn clean package -DskipTests'
-            }
-        }
-
-        stage('Login to Docker Hub') {
-            steps {
-                // Step 4: Login no DockerHub
-                sh 'echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin'
-            }
-        }
-
-        stage('Build and Push Docker Image') {
-            steps {
-                // Step 5: Build e push da imagem Docker
                 script {
-                    def imageTag = "${DOCKERHUB_USERNAME}/playground-gitops-argo-cd:${env.GIT_COMMIT}"
-                    sh "docker build -t ${imageTag} ."
-                    sh "docker push ${imageTag}"
+                    // Etapa de input para confirmar o deploy
+                    def userInput = input(
+                        message: 'Deseja implantar a nova versão?',
+                        parameters: [
+                            booleanParam(defaultValue: false, description: 'Confirme para implantar', name: 'confirmDeploy')
+                        ]
+                    )
+
+                    if (userInput == true) {
+                        echo 'Deploy aprovado pelo usuário.'
+                        // Coloque seus comandos de deploy aqui, por exemplo:
+                        // sh 'kubectl apply -f deployment.yaml'
+                    } else {
+                        echo 'Deploy cancelado pelo usuário.'
+                    }
                 }
             }
         }
 
-        stage('Deploy/Update Argo CD Repo') {
+        stage('Clean Workspace') {
             steps {
-                // Clona o repositório de destino
-                sh 'git clone -b beta https://$REPO_ACCESS_TOKEN@github.com/jonilsonds9/playground-deploy-gitops.git'
-
-                // Faz alterações no repositório clonado
-                sh '''
-                    cd playground-deploy-gitops
-                    chart_dir="helm"
-                    new_image_tag=${GIT_COMMIT}
-                    sed -i "s/^  tag: .*/  tag: $new_image_tag/" "$chart_dir/values-beta.yaml"
-                '''
-
-                // Faz o commit e push das alterações no repositório de destino
-                sh '''
-                    cd playground-deploy-gitops
-                    git config --global user.name "jenkins"
-                    git config --global user.email "jenkins@localhost"
-                    git commit -am "Atualização Docker image para sync no Argo CD"
-                    git push https://$REPO_ACCESS_TOKEN@github.com/jonilsonds9/playground-deploy-gitops.git beta
-                '''
+                // Step 0: Limpar workspace
+                sh 'echo "Limpando ambiente..."'
             }
         }
+
+//         stage('Checkout') {
+//             steps {
+//                 // Step 1: Checkout do código fonte
+//                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/seu-usuario/seu-repo.git']]])
+//             }
+//         }
+//
+//         stage('Setup JDK') {
+//             steps {
+//                 // Step 2: Configuração do JDK para construir o projeto
+//                 tool name: 'jdk21', type: 'jdk' // Configure um JDK no Jenkins com o nome 'jdk21'
+//             }
+//         }
+//
+//         stage('Build with Maven') {
+//             steps {
+//                 // Step 3: Construir o projeto usando Maven
+//                 sh 'mvn clean package -DskipTests'
+//             }
+//         }
+//
+//         stage('Login to Docker Hub') {
+//             steps {
+//                 // Step 4: Login no DockerHub
+//                 sh 'echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin'
+//             }
+//         }
+//
+//         stage('Build and Push Docker Image') {
+//             steps {
+//                 // Step 5: Build e push da imagem Docker
+//                 script {
+//                     def imageTag = "${DOCKERHUB_USERNAME}/playground-gitops-argo-cd:${env.GIT_COMMIT}"
+//                     sh "docker build -t ${imageTag} ."
+//                     sh "docker push ${imageTag}"
+//                 }
+//             }
+//         }
+//
+//         stage('Deploy/Update Argo CD Repo') {
+//             steps {
+//                 // Clona o repositório de destino
+//                 sh 'git clone -b beta https://$REPO_ACCESS_TOKEN@github.com/jonilsonds9/playground-deploy-gitops.git'
+//
+//                 // Faz alterações no repositório clonado
+//                 sh '''
+//                     cd playground-deploy-gitops
+//                     chart_dir="helm"
+//                     new_image_tag=${GIT_COMMIT}
+//                     sed -i "s/^  tag: .*/  tag: $new_image_tag/" "$chart_dir/values-beta.yaml"
+//                 '''
+//
+//                 // Faz o commit e push das alterações no repositório de destino
+//                 sh '''
+//                     cd playground-deploy-gitops
+//                     git config --global user.name "jenkins"
+//                     git config --global user.email "jenkins@localhost"
+//                     git commit -am "Atualização Docker image para sync no Argo CD"
+//                     git push https://$REPO_ACCESS_TOKEN@github.com/jonilsonds9/playground-deploy-gitops.git beta
+//                 '''
+//             }
+//         }
     }
 
     post {
