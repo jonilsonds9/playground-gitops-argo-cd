@@ -1,0 +1,83 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_USERNAME = credentials('dockerhub-username') // Credencial configurada no Jenkins
+        DOCKERHUB_TOKEN = credentials('dockerhub-token') // Credencial configurada no Jenkins
+        REPO_ACCESS_TOKEN = credentials('repo-access-token') // Credencial configurada no Jenkins para acessar o repositório GitHub
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Step 1: Checkout do código fonte
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/seu-usuario/seu-repo.git']]])
+            }
+        }
+
+        stage('Setup JDK') {
+            steps {
+                // Step 2: Configuração do JDK para construir o projeto
+                tool name: 'jdk21', type: 'jdk' // Configure um JDK no Jenkins com o nome 'jdk21'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                // Step 3: Construir o projeto usando Maven
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                // Step 4: Login no DockerHub
+                sh 'echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin'
+            }
+        }
+
+        stage('Build and Push Docker Image') {
+            steps {
+                // Step 5: Build e push da imagem Docker
+                script {
+                    def imageTag = "${DOCKERHUB_USERNAME}/playground-gitops-argo-cd:${env.GIT_COMMIT}"
+                    sh "docker build -t ${imageTag} ."
+                    sh "docker push ${imageTag}"
+                }
+            }
+        }
+
+        stage('Deploy/Update Argo CD Repo') {
+            steps {
+                // Clona o repositório de destino
+                sh 'git clone -b beta https://$REPO_ACCESS_TOKEN@github.com/jonilsonds9/playground-deploy-gitops.git'
+
+                // Faz alterações no repositório clonado
+                sh '''
+                    cd playground-deploy-gitops
+                    chart_dir="helm"
+                    new_image_tag=${GIT_COMMIT}
+                    sed -i "s/^  tag: .*/  tag: $new_image_tag/" "$chart_dir/values-beta.yaml"
+                '''
+
+                // Faz o commit e push das alterações no repositório de destino
+                sh '''
+                    cd playground-deploy-gitops
+                    git config --global user.name "jenkins"
+                    git config --global user.email "jenkins@localhost"
+                    git commit -am "Atualização Docker image para sync no Argo CD"
+                    git push https://$REPO_ACCESS_TOKEN@github.com/jonilsonds9/playground-deploy-gitops.git beta
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline concluído com sucesso!'
+        }
+        failure {
+            echo 'Pipeline falhou.'
+        }
+    }
+}
