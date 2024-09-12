@@ -27,11 +27,11 @@ pipeline {
                     )
 
                     if (userInput == true) {
-                        echo 'Deploy aprovado pelo usuário.'
+                        sh 'echo "Deploy aprovado pelo usuário."'
                         // Coloque seus comandos de deploy aqui, por exemplo:
                         // sh 'kubectl apply -f deployment.yaml'
                     } else {
-                        echo 'Deploy cancelado pelo usuário.'
+                        sh 'echo "Deploy cancelado pelo usuário."'
                     }
                 }
             }
@@ -39,7 +39,6 @@ pipeline {
 
         stage('Clean Workspace') {
             steps {
-                // Step 0: Limpar workspace
                 sh 'echo "Limpando ambiente..."'
             }
         }
