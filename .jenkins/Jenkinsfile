@@ -25,7 +25,7 @@ pipeline {
                 script {
                     // Etapa de input para confirmar o deploy
                     timeout(time: 1, unit: 'MINUTES') {
-                        def confirmDeploy = input(
+                        def confirmDeployInput = input(
                             id: 'confirmDeploy',
                             message: 'Deseja fazer deploy desta versão?',
                             ok: 'Sim',
@@ -38,7 +38,7 @@ pipeline {
                             ]
                         )
 
-                        if (confirmDeploy.get('Confirmar Deploy')) {
+                        if (confirmDeployInput) {
                             echo "Deploy confirmado. Iniciando o processo de deploy..."
                         } else {
                             echo "Deploy abortado pelo usuário."
