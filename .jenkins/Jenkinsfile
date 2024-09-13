@@ -34,7 +34,7 @@ pipeline {
                             parameters: [
                                 booleanParam(
                                     defaultValue: false,
-                                    description: '',
+                                    description: 'Marque o checkbox e clique em Sim para confirmar o deploy',
                                     name: 'Confirmar Deploy'
                                 )
                             ],
@@ -47,7 +47,7 @@ pipeline {
                         } else {
                             echo "Deploy abortado pelo usuário."
                             currentBuild.result = 'ABORTED'
-                            error('Deploy abortado pelo usuário.')
+                            return
                         }
 
 //                         def userInput = input(
