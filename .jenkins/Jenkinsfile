@@ -14,7 +14,7 @@ pipeline {
             }
         }
 
-        stage('Preparation') {
+        stage('Build') {
             steps {
                 sh 'echo "Preparando ambiente..."'
             }
@@ -34,7 +34,7 @@ pipeline {
                             parameters: [
                                 booleanParam(
                                     defaultValue: false,
-                                    description: 'Eu confirmo que quero fazer o deploy',
+                                    description: '',
                                     name: 'Confirmar Deploy'
                                 )
                             ]
@@ -63,9 +63,9 @@ pipeline {
             }
         }
 
-        stage('Finish') {
+        stage('Argo CD Sync') {
             steps {
-                sh 'echo "Finalizando..."'
+                sh 'echo "Argo..."'
             }
         }
 
