@@ -24,19 +24,21 @@ pipeline {
             steps {
                 script {
                     // Etapa de input para confirmar o deploy
-                    def userInput = input(
-                        message: 'Deseja implantar a nova versão?',
-                        parameters: [
-                            booleanParam(defaultValue: false, description: 'Confirme para implantar', name: 'Confirmar Deploy')
-                        ]
-                    )
+                    timeout(time: 2, unit: 'MINUTES') {
+                        def userInput = input(
+                            message: 'Deseja implantar a nova versão?',
+                            parameters: [
+                                booleanParam(defaultValue: false, description: 'Confirme para implantar', name: 'Confirmar Deploy')
+                            ]
+                        )
 
-                    if (userInput) {
-                        sh 'echo "Deploy aprovado pelo usuário."'
-                        // Coloque seus comandos de deploy aqui, por exemplo:
-                        // sh 'kubectl apply -f deployment.yaml'
-                    } else {
-                        sh 'echo "Deploy cancelado pelo usuário."'
+                        if (userInput) {
+                            sh 'echo "Deploy aprovado pelo usuário."'
+                            // Coloque seus comandos de deploy aqui, por exemplo:
+                            // sh 'kubectl apply -f deployment.yaml'
+                        } else {
+                            sh 'echo "Deploy cancelado pelo usuário."'
+                        }
                     }
                 }
             }
