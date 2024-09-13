@@ -27,7 +27,7 @@ pipeline {
                     timeout(time: 1, unit: 'MINUTES') {
 //                         def userInput = input(message: 'Deseja fazer deploy desta versão?', ok: 'Sim', submitter: 'developer', parameters: [booleanParam(defaultValue: true, description: 'Confirmar deploy', name: 'Confirmar deploy')])
 
-                        def userInput = input(
+                        def confirmDeploy = input(
                             id: 'confirmDeploy',
                             message: 'Deseja fazer deploy desta versão?',
                             ok: 'Sim',
@@ -37,13 +37,19 @@ pipeline {
                                     description: '',
                                     name: 'Confirmar Deploy'
                                 )
-                            ]
+                            ],
+                            timeout: 30,
+                            timeoutParameter: 'timeoutReason'
                         )
 
-                        if (!userInput.Deploy) {
+                        if (userInput['Confirmar Deploy']) {
+                            echo "Deploy confirmado. Iniciando o processo de deploy..."
+                        } else {
+                            echo "Deploy abortado pelo usuário."
                             currentBuild.result = 'ABORTED'
                             error('Deploy abortado pelo usuário.')
                         }
+
 //                         def userInput = input(
 //                             message: 'Deseja implantar a nova versão?',
 //                             parameters: [
