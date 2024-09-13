@@ -23,21 +23,24 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Etapa de input para confirmar o deploy
-                    timeout(time: 2, unit: 'MINUTES') {
-                        def userInput = input(
-                            message: 'Deseja implantar a nova versão?',
-                            parameters: [
-                                booleanParam(defaultValue: false, description: 'Confirme para implantar', name: 'Confirmar Deploy')
-                            ]
-                        )
+                    // Captura possíveis erros, como timeout, sem falhar o pipeline
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        // Etapa de input para confirmar o deploy
+                        timeout(time: 1, unit: 'MINUTES') {
+                            def userInput = input(
+                                message: 'Deseja implantar a nova versão?',
+                                parameters: [
+                                    booleanParam(defaultValue: false, description: 'Confirme para implantar', name: 'Confirmar Deploy')
+                                ]
+                            )
 
-                        if (userInput) {
-                            sh 'echo "Deploy aprovado pelo usuário."'
-                            // Coloque seus comandos de deploy aqui, por exemplo:
-                            // sh 'kubectl apply -f deployment.yaml'
-                        } else {
-                            sh 'echo "Deploy cancelado pelo usuário."'
+                            if (userInput) {
+                                sh 'echo "Deploy aprovado pelo usuário."'
+                                // Coloque seus comandos de deploy aqui, por exemplo:
+                                // sh 'kubectl apply -f deployment.yaml'
+                            } else {
+                                sh 'echo "Deploy cancelado pelo usuário."'
+                            }
                         }
                     }
                 }
@@ -112,7 +115,14 @@ pipeline {
             echo 'Pipeline concluído com sucesso!'
         }
         failure {
-            echo 'Pipeline falhou.'
+            script {
+                def currentStage = currentBuild.getBuildCauses().toString()
+                if (currentStage.contains("org.jenkinsci.plugins.workflow.support.steps.input.RejectedValueCause")) {
+                    echo 'Pipeline foi abortado devido ao timeout. Nenhuma resposta foi fornecida a tempo.'
+                } else {
+                    echo 'Pipeline falhou.'
+                }
+            }
         }
     }
 }
