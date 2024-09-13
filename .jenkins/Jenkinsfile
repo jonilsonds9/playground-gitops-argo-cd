@@ -43,23 +43,10 @@ pipeline {
                         } else {
                             echo "Deploy abortado pelo usuário."
                             currentBuild.result = 'ABORTED'
-                            return
+                            catchError(buildResult: 'ABORTED', message: 'Pipeline abortado pelo usuário.') {
+                                error("Abortando build conforme solicitação do usuário.")
+                            }
                         }
-
-//                         def userInput = input(
-//                             message: 'Deseja implantar a nova versão?',
-//                             parameters: [
-//                                 booleanParam(defaultValue: false, description: 'Confirme para implantar', name: 'Confirmar Deploy')
-//                             ]
-//                         )
-
-//                         if (userInput) {
-//                             sh 'echo "Deploy aprovado pelo usuário."'
-//                             // Coloque seus comandos de deploy aqui, por exemplo:
-//                             // sh 'kubectl apply -f deployment.yaml'
-//                         } else {
-//                             sh 'echo "Deploy cancelado pelo usuário."'
-//                         }
                     }
                 }
             }
