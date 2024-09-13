@@ -34,13 +34,15 @@ pipeline {
                             parameters: [
                                 booleanParam(
                                     defaultValue: false,
-                                    description: 'Marque o checkbox e clique em Sim para confirmar o deploy',
+                                    description: 'Selecione o campo para confirmar o deploy',
                                     name: 'Confirmar Deploy'
                                 )
                             ],
                             timeout: 30,
                             timeoutParameter: 'timeoutReason'
                         )
+
+                        echo "userInput: ${userInput['Confirmar Deploy']}"
 
                         if (userInput['Confirmar Deploy']) {
                             echo "Deploy confirmado. Iniciando o processo de deploy..."
