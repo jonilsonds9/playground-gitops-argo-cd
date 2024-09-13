@@ -25,8 +25,6 @@ pipeline {
                 script {
                     // Etapa de input para confirmar o deploy
                     timeout(time: 1, unit: 'MINUTES') {
-//                         def userInput = input(message: 'Deseja fazer deploy desta versão?', ok: 'Sim', submitter: 'developer', parameters: [booleanParam(defaultValue: true, description: 'Confirmar deploy', name: 'Confirmar deploy')])
-
                         def confirmDeploy = input(
                             id: 'confirmDeploy',
                             message: 'Deseja fazer deploy desta versão?',
@@ -34,15 +32,11 @@ pipeline {
                             parameters: [
                                 booleanParam(
                                     defaultValue: false,
-                                    description: 'Selecione o campo para confirmar o deploy',
+                                    description: 'Selecione o checkbox abaixo para confirmar o deploy',
                                     name: 'Confirmar Deploy'
                                 )
-                            ],
-                            timeout: 30,
-                            timeoutParameter: 'timeoutReason'
+                            ]
                         )
-
-                        echo "userInput: ${userInput['Confirmar Deploy']}"
 
                         if (userInput['Confirmar Deploy']) {
                             echo "Deploy confirmado. Iniciando o processo de deploy..."
