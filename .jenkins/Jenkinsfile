@@ -22,11 +22,11 @@ pipeline {
                     def userInput = input(
                         message: 'Deseja implantar a nova versão?',
                         parameters: [
-                            booleanParam(defaultValue: false, description: 'Confirme para implantar', name: 'confirmDeploy')
+                            booleanParam(defaultValue: false, description: 'Confirme para implantar', name: 'Confirmar Deploy')
                         ]
                     )
 
-                    if (userInput == true) {
+                    if (userInput) {
                         sh 'echo "Deploy aprovado pelo usuário."'
                         // Coloque seus comandos de deploy aqui, por exemplo:
                         // sh 'kubectl apply -f deployment.yaml'
