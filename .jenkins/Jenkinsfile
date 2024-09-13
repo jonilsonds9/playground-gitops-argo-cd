@@ -43,9 +43,7 @@ pipeline {
                         } else {
                             echo "Deploy abortado pelo usuário."
                             currentBuild.result = 'ABORTED'
-                            catchError(buildResult: 'ABORTED', message: 'Pipeline abortado pelo usuário.') {
-                                error("Abortando build conforme solicitação do usuário.")
-                            }
+                            error("Abortando build conforme solicitação do usuário.")
                         }
                     }
                 }
