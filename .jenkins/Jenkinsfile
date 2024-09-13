@@ -38,7 +38,7 @@ pipeline {
                             ]
                         )
 
-                        if (userInput['Confirmar Deploy']) {
+                        if (confirmDeploy['Confirmar Deploy']) {
                             echo "Deploy confirmado. Iniciando o processo de deploy..."
                         } else {
                             echo "Deploy abortado pelo usuário."
